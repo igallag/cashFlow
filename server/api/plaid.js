@@ -18,8 +18,8 @@ const client = new plaid.Client(
 // Accept the public_token sent from Link
 // const router = express()
 router.post('/get_access_token', function(request, response, next) {
-  console.log('inside the app.post')
-  PUBLIC_TOKEN = request.body.public_token
+  PUBLIC_TOKEN = request.body.token
+
   client.exchangePublicToken(PUBLIC_TOKEN, function(error, tokenResponse) {
     if (error !== null) {
       console.log('Could not exchange public_token!' + '\n' + error)

@@ -13,7 +13,7 @@ class PlaidLinkComponent extends React.Component {
       url: 'http://localhost:8080/api/plaid/get_access_token',
       method: 'POST',
       onError: function() {
-        console.log('onerror')
+        console.log('onError')
       },
       onLoad: function(statusCode, responseBody) {
         console.log(responseBody)
