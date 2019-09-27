@@ -16,7 +16,16 @@ class PlaidLinkComponent extends React.Component {
         console.log('onError')
       },
       onLoad: function(statusCode, responseBody) {
-        console.log(responseBody)
+        // console.log(responseBody, 'this is responseBody in handleSuccess>onLoad')
+        util({
+          parameters: {
+            access_token: responseBody.access_token,
+            item_id: responseBody.item_id,
+            error: responseBody.error
+          },
+          url: 'http://localhost:8080/api/plaid/auth',
+          method: 'GET'
+        })
       }
     })
   }

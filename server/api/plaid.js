@@ -1,6 +1,7 @@
 const bodyParser = require('body-parser')
 const router = require('express').Router()
 const plaid = require('plaid')
+const moment = require('moment')
 
 // We store the access_token in memory - in production, store it in
 // a secure
@@ -16,7 +17,7 @@ const client = new plaid.Client(
 )
 
 // Accept the public_token sent from Link
-// const router = express()
+
 router.post('/get_access_token', function(request, response, next) {
   PUBLIC_TOKEN = request.body.token
 
@@ -25,12 +26,69 @@ router.post('/get_access_token', function(request, response, next) {
       console.log('Could not exchange public_token!' + '\n' + error)
       return response.json({error: error.message})
     }
+    console.log(tokenResponse, 'this is tokenResponse')
     ACCESS_TOKEN = tokenResponse.access_token
     let ITEM_ID = tokenResponse.item_id
     console.log('Access Token: ' + ACCESS_TOKEN)
     console.log('Item ID: ' + ITEM_ID)
-    response.json({error: false})
+    response.json({
+      access_token: ACCESS_TOKEN,
+      item_id: ITEM_ID,
+      error: false
+    })
   })
+})
+
+// uses the access token to retrieve account data
+router.get('/auth', function(request, response, next) {
+  console.log('inside get')
+  client.getAuth(ACCESS_TOKEN, function(error, authResponse) {
+    console.log('inside of getAuth')
+    if (error !== null) {
+      return response.json({
+        error: error
+      })
+    }
+
+    console.log(
+      authResponse.accounts[0].balances,
+      'this is auth responseaccounts[0].balances'
+    )
+    response.json({error: null, auth: authResponse})
+  })
+})
+
+// Retrieve Transactions for an Item
+// https://plaid.com/docs/#transactions
+router.get('/transactions', function(request, response, next) {
+  // Pull transactions for the Item for the last 30 days
+  const startDate = moment()
+    .subtract(30, 'days')
+    .format('YYYY-MM-DD')
+  var endDate = moment().format('YYYY-MM-DD')
+  client.getTransactions(
+    ACCESS_TOKEN,
+    startDate,
+    endDate,
+    {
+      count: 250,
+      offset: 0
+    },
+    function(error, transactionsResponse) {
+      if (error != null) {
+        prettyPrintResponse(error)
+        return response.json({
+          error: error
+        })
+      } else {
+        prettyPrintResponse(transactionsResponse)
+        response.json({
+          error: false,
+          transactions: transactionsResponse
+        })
+      }
+    }
+  )
 })
 
 // router.listen(8080)

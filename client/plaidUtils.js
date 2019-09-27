@@ -13,7 +13,7 @@ const makeRequest = function(options) {
   }
 
   const requestOptions = Object.assign({}, defaultOptions, options)
-  console.log(requestOptions)
+  // console.log(requestOptions)
   const request = new XMLHttpRequest()
   request.open(requestOptions.method, requestOptions.url)
   request.setRequestHeader('Content-Type', requestOptions.contentType)
