@@ -1,11 +1,25 @@
 import React from 'react'
 import PlaidLink from 'react-plaid-link'
 import util from '../plaidUtils'
+import {connect} from 'react-redux'
+import {getDataThunk} from '../store/dataStore'
 
 class PlaidLinkComponent extends React.Component {
-  handleOnSuccess(token, metadata) {
-    console.log('SUCCESS')
-    util({
+  // constructor(props) {
+  //   super(props)
+  // }
+
+  componentDidMount() {
+    // console.log(this, 'this in class')
+  }
+
+  async handleOnSuccess(token, metadata) {
+    let publicTokenHolder = {}
+    let accessTokenHolder = {}
+    let finDataHolder = {}
+
+    // console.log(this, 'this is props')
+    publicTokenHolder = util({
       parameters: {
         token: token,
         metadata: metadata
@@ -14,20 +28,28 @@ class PlaidLinkComponent extends React.Component {
       method: 'POST',
       onError: function() {
         console.log('onError')
-      },
-      onLoad: function(statusCode, responseBody) {
-        // console.log(responseBody, 'this is responseBody in handleSuccess>onLoad')
-        util({
-          parameters: {
-            access_token: responseBody.access_token,
-            item_id: responseBody.item_id,
-            error: responseBody.error
-          },
-          url: 'http://localhost:8080/api/plaid/auth',
-          method: 'GET'
-        })
       }
     })
+    accessTokenHolder = util({
+      parameters: {
+        access_token: publicTokenHolder.access_token,
+        item_id: publicTokenHolder.item_id,
+        error: publicTokenHolder.error
+      },
+      url: 'http://localhost:8080/api/plaid/auth',
+      method: 'GET'
+    })
+    // console.log(accessTokenHolder.access_token, 'THIS IS ACCESSTOKENHOLDER')
+    finDataHolder = await util({
+      parameters: {
+        access_token: accessTokenHolder.access_token,
+        item_id: accessTokenHolder.item_id,
+        error: accessTokenHolder.error
+      },
+      url: 'http://localhost:8080/api/plaid/transactions',
+      method: 'GET'
+    })
+    console.log(finDataHolder, 'THIS IS FINDATA')
   }
 
   handleOnExit(error, metadata) {
@@ -52,4 +74,10 @@ class PlaidLinkComponent extends React.Component {
   }
 }
 
-export default PlaidLinkComponent
+const mapDispatchToProps = dispatch => {
+  return {
+    getData: responseBody => dispatch(getDataThunk(responseBody))
+  }
+}
+
+export default connect(null, mapDispatchToProps)(PlaidLinkComponent)

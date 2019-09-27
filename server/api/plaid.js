@@ -20,13 +20,13 @@ const client = new plaid.Client(
 
 router.post('/get_access_token', function(request, response, next) {
   PUBLIC_TOKEN = request.body.token
-
+  console.log('inside get access token')
   client.exchangePublicToken(PUBLIC_TOKEN, function(error, tokenResponse) {
     if (error !== null) {
       console.log('Could not exchange public_token!' + '\n' + error)
       return response.json({error: error.message})
     }
-    console.log(tokenResponse, 'this is tokenResponse')
+    // console.log(tokenResponse, 'this is tokenResponse')
     ACCESS_TOKEN = tokenResponse.access_token
     let ITEM_ID = tokenResponse.item_id
     console.log('Access Token: ' + ACCESS_TOKEN)
@@ -41,7 +41,7 @@ router.post('/get_access_token', function(request, response, next) {
 
 // uses the access token to retrieve account data
 router.get('/auth', function(request, response, next) {
-  console.log('inside get')
+  // console.log('inside get')
   client.getAuth(ACCESS_TOKEN, function(error, authResponse) {
     console.log('inside of getAuth')
     if (error !== null) {
@@ -62,10 +62,13 @@ router.get('/auth', function(request, response, next) {
 // https://plaid.com/docs/#transactions
 router.get('/transactions', function(request, response, next) {
   // Pull transactions for the Item for the last 30 days
+  console.log(
+    'INSIDE TRANSACTIONS API ================================================='
+  )
   const startDate = moment()
     .subtract(30, 'days')
     .format('YYYY-MM-DD')
-  var endDate = moment().format('YYYY-MM-DD')
+  const endDate = moment().format('YYYY-MM-DD')
   client.getTransactions(
     ACCESS_TOKEN,
     startDate,
@@ -75,13 +78,12 @@ router.get('/transactions', function(request, response, next) {
       offset: 0
     },
     function(error, transactionsResponse) {
-      if (error != null) {
-        prettyPrintResponse(error)
+      if (error !== null) {
         return response.json({
           error: error
         })
       } else {
-        prettyPrintResponse(transactionsResponse)
+        console.log(transactionsResponse, 'this is transactionResponse')
         response.json({
           error: false,
           transactions: transactionsResponse
