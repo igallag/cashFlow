@@ -3,9 +3,13 @@ import PlaidLink from 'react-plaid-link'
 import util from '../plaidUtils'
 
 class PlaidLinkComponent extends React.Component {
-  handleOnSuccess(token, metadata) {
-    console.log('SUCCESS')
-    util({
+  async handleOnSuccess(token, metadata) {
+    let publicTokenHolder = {}
+    let accessTokenHolder = {}
+    let finDataHolder = {}
+
+    // console.log(this, 'this is props')
+    publicTokenHolder = util({
       parameters: {
         token: token,
         metadata: metadata
@@ -14,20 +18,29 @@ class PlaidLinkComponent extends React.Component {
       method: 'POST',
       onError: function() {
         console.log('onError')
-      },
-      onLoad: function(statusCode, responseBody) {
-        // console.log(responseBody, 'this is responseBody in handleSuccess>onLoad')
-        util({
-          parameters: {
-            access_token: responseBody.access_token,
-            item_id: responseBody.item_id,
-            error: responseBody.error
-          },
-          url: 'http://localhost:8080/api/plaid/auth',
-          method: 'GET'
-        })
       }
     })
+    console.log(publicTokenHolder, 'this is publicTokenHolder')
+    accessTokenHolder = util({
+      parameters: {
+        access_token: publicTokenHolder.access_token,
+        item_id: publicTokenHolder.item_id,
+        error: publicTokenHolder.error
+      },
+      url: 'http://localhost:8080/api/plaid/auth',
+      method: 'GET'
+    })
+    console.log(accessTokenHolder, 'THIS IS ACCESSTOKENHOLDER')
+    finDataHolder = await util({
+      parameters: {
+        access_token: accessTokenHolder.access_token,
+        item_id: accessTokenHolder.item_id,
+        error: accessTokenHolder.error
+      },
+      url: 'http://localhost:8080/api/plaid/transactions',
+      method: 'GET'
+    })
+    console.log(finDataHolder.response, 'THIS IS FINDATA')
   }
 
   handleOnExit(error, metadata) {
@@ -38,16 +51,18 @@ class PlaidLinkComponent extends React.Component {
 
   render() {
     return (
-      <PlaidLink
-        clientName="Cash Flow"
-        env="sandbox"
-        product={['auth', 'transactions']}
-        publicKey="498272ecf14c471af0dd91aec416e6"
-        onExit={this.handleOnExit}
-        onSuccess={this.handleOnSuccess}
-      >
-        Connect your Bank Account
-      </PlaidLink>
+      <div>
+        <PlaidLink
+          clientName="Cash Flow"
+          env="sandbox"
+          product={['auth', 'transactions']}
+          publicKey="498272ecf14c471af0dd91aec416e6"
+          onExit={this.handleOnExit}
+          onSuccess={this.handleOnSuccess}
+        >
+          Connect your Bank Account
+        </PlaidLink>
+      </div>
     )
   }
 }

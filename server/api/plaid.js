@@ -26,7 +26,7 @@ router.post('/get_access_token', function(request, response, next) {
       console.log('Could not exchange public_token!' + '\n' + error)
       return response.json({error: error.message})
     }
-    console.log(tokenResponse, 'this is tokenResponse')
+    // console.log(tokenResponse, 'this is tokenResponse')
     ACCESS_TOKEN = tokenResponse.access_token
     let ITEM_ID = tokenResponse.item_id
     console.log('Access Token: ' + ACCESS_TOKEN)
@@ -50,10 +50,7 @@ router.get('/auth', function(request, response, next) {
       })
     }
 
-    console.log(
-      authResponse.accounts[0].balances,
-      'this is auth responseaccounts[0].balances'
-    )
+    console.log(authResponse.accounts, 'this is auth responseaccounts')
     response.json({error: null, auth: authResponse})
   })
 })
@@ -62,6 +59,7 @@ router.get('/auth', function(request, response, next) {
 // https://plaid.com/docs/#transactions
 router.get('/transactions', function(request, response, next) {
   // Pull transactions for the Item for the last 30 days
+  // console.log('INSIDE OF THE GET TRANSACTIONS ROUTE' , response)
   const startDate = moment()
     .subtract(30, 'days')
     .format('YYYY-MM-DD')
@@ -71,22 +69,28 @@ router.get('/transactions', function(request, response, next) {
     startDate,
     endDate,
     {
-      count: 250,
+      count: 5,
       offset: 0
     },
     function(error, transactionsResponse) {
-      if (error != null) {
-        prettyPrintResponse(error)
+      if (error !== null) {
+        // prettyPrintResponse(error)
+        console.log('ERROR INSIDE OF TRANSACTIONS INSIDE FUNCTION', error)
         return response.json({
           error: error
         })
       } else {
-        prettyPrintResponse(transactionsResponse)
+        // prettyPrintResponse(transactionsResponse)
+        // window.localStorage.setItem('test', 'this is a test')
+        // window.localStorage.setItem('data', JSON.stringify(transactionsResponse))
+        // console.log(transactionsResponse, 'this is transactionsResponse = = = = = = = = = = = = = = = = = = = = = = = = = = =')
         response.json({
           error: false,
           transactions: transactionsResponse
         })
       }
+      const transactions = transactionsResponse.transactions
+      console.log(transactions, 'THIS IS TRANSACTIONS')
     }
   )
 })
